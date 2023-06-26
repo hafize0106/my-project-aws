@@ -1,0 +1,34 @@
+pip install flask                #burda programlar kurulu mu diye kontrolet yoksa yükle 
+pip install flask-MySQL
+pip install flask-SQLAlchemy
+  
+  #not: programmı çalıştırmak  için python3 app-with-sqlite.python3
+  1.senaryoda ;sqlite dosyamı lokalde çalıştırdım ve kurduğum DB BROWSER SQLİTE PROGRAMINDA KODLARIMI GÖRDÜM .
+
+  2. SENARYODA ; bir tane rds servisinden rds create ettik 3306 port açık ,programda endpoint adresini programa yapıştırdık.. MySQL porgramımını açtık orda databaseleri gördük.
+   workbench e endpoint şifreyle bağlanıp database ulastık . workbench e show databases;
+use clarusway;
+show tables;
+select *from  users;
+ dataları gördük.
+
+ 3. kısımda ; ec2 ya bağlandık 
+  sonra bu komutları çalıştırdık #bu komutlar ec2 ya python flask mysql sqlalchemy kurduk 
+sudo yum update -y
+sudo yum install python3 -y
+sudo yum install python-pip
+sudo pip3 install flask
+sudo pip3 install flask-mysql
+sudo pip3 install sqlalchemy
+sudo pip3 install Flask-SQLAlchemy
+sudo yum install git -y
+pwd
+sudo git clone http://....................my-project.git #githubdan dosyaları çektik 
+ls
+cd my-projects
+cd flask-05.........
+sudo rm -r email.db
+sudo python3 app-with-sqlite.py #çalıştırk 
+sudo python3 app-with-mysql.py
+
+NOT: github  kodların port80 açık olması lazım
