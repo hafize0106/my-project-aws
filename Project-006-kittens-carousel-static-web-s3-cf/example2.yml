@@ -2,42 +2,56 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   Cloudformation Template for kittens carousel static website deploy on s3 through 
   cloudfront and route 53
+
 Parameters:
   HostedZoneName:
-    Description: DNS Name of existing Amazon Route 53 hosted zone. exp. clarusway.us
+    Description: DNS Name of existing Amazon Route 53 hosted zone.
     Type: AWS::Route53::HostedZone::Id
   KittensSubDomainName:
     Description: Full domain name for the App. ex. kittens.clarusway.us
     Type: String
-    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)    
   
 Resources:
   MyBucket:
     Type: AWS::S3::Bucket
     Properties:
-      PublicAccessBlockConfiguration:
-          BlockPublicAcls: FALSE
-      BucketName: !Ref KittensSubDomainName # www.clarusway.us
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256          #defaulttan geliyor
+            BucketKeyEnabled: false         #defaulttan geliyor
+      BucketName: !Ref KittensSubDomainName    #
+      ObjectLockEnabled: false  #
       OwnershipControls:
         Rules:
-          - ObjectOwnership: ObjectWriter          
+          - ObjectOwnership: BucketOwnerEnforced  # Disable yapmak için BucketOwnerEnforced Enable yapmak için BucketOwnerPreferred ObjectWriter
+      PublicAccessBlockConfiguration:  #
+        BlockPublicAcls: false
+      VersioningConfiguration:  #
+        Status: Suspended
       WebsiteConfiguration:
         IndexDocument: index.html
 
   KittensBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket: !Ref MyBucket
-      PolicyDocument: 
-        Statement: 
-          - Action: s3:GetObject
+    Properties:
+      Bucket: !Ref MyBucket # Required
+      PolicyDocument: # Required
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 's3:GetObject'
             Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref MyBucket    # !GetAtt MyBucket.Arn
+                - /*
             Principal: '*'
-            Sid: PublicReadGetObject
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'MyBucket', /*]] 
- 
+
   MyCloudfront:
-    Type: "AWS::CloudFront::Distribution" 
+    Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Aliases:
@@ -51,11 +65,11 @@ Resources:
           ForwardedValues: 
             QueryString: true 
             Cookies:
-              Forward: none 
+              Forward: none
           TargetOriginId: KittensOrigin  
           ViewerProtocolPolicy: allow-all
         DefaultRootObject: index.html   
-        Enabled: true
+        Enabled: true   
         HttpVersion: http2
         Origins: 
         - DomainName: !Select [2, !Split ["/", !GetAtt MyBucket.WebsiteURL]] 
@@ -64,20 +78,21 @@ Resources:
             OriginProtocolPolicy: http-only
         PriceClass: PriceClass_All
         ViewerCertificate:  
-          AcmCertificateArn: arn:aws:acm:us-east-1:777749318028:certificate/edaebaa5-0291-4259-b69a-1dede2ff511b
+          AcmCertificateArn: arn:aws:acm:us-east-1:777749318028:certificate/edaebaa5-0291-4259-b69a-1dede2ff511b  #kendi sertifika no yazılacak 
           SslSupportMethod: sni-only
-  
+
   MyRecordName:
     Type: AWS::Route53::RecordSetGroup
     Properties:      
-      HostedZoneId: !Ref HostedZoneName  
+      HostedZoneId: !Ref HostedZoneName
       RecordSets:
         - Name: !Ref KittensSubDomainName
           Type: A
           AliasTarget:
             DNSName: !GetAtt MyCloudfront.DomainName
             HostedZoneId: Z2FDTNDATAQYW2
-   
+
+  
 Outputs:
   BucketName: 
     Description: S3 Bucket URL for Kittens Website
