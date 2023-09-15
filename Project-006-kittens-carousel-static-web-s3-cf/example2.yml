@@ -23,7 +23,7 @@ Resources:
             BucketKeyEnabled: false         #defaulttan geliyor
       BucketName: !Ref KittensSubDomainName    #
       ObjectLockEnabled: false  #
-      OwnershipControls:
+      OwnershipControls: 
         Rules:
           - ObjectOwnership: BucketOwnerEnforced  # Disable yapmak için BucketOwnerEnforced Enable yapmak için BucketOwnerPreferred ObjectWriter
       PublicAccessBlockConfiguration:  #
@@ -51,7 +51,7 @@ Resources:
             Principal: '*'
 
   MyCloudfront:
-    Type: AWS::CloudFront::Distribution
+    Type: AWS::CloudFront::Distribution 
     Properties:
       DistributionConfig:
         Aliases:
@@ -59,8 +59,8 @@ Resources:
         Comment: Cloudfront Distribution pointing to Kittens S3 bucket
         DefaultCacheBehavior:
           AllowedMethods:  
-          - GET
-          - HEAD
+          - GET 
+          - HEAD 
           Compress: true
           ForwardedValues: 
             QueryString: true 
@@ -70,7 +70,7 @@ Resources:
           ViewerProtocolPolicy: allow-all
         DefaultRootObject: index.html   
         Enabled: true   
-        HttpVersion: http2
+        HttpVersion: http2 
         Origins: 
         - DomainName: !Select [2, !Split ["/", !GetAtt MyBucket.WebsiteURL]] 
           Id: KittensOrigin
@@ -86,7 +86,7 @@ Resources:
     Properties:      
       HostedZoneId: !Ref HostedZoneName
       RecordSets:
-        - Name: !Ref KittensSubDomainName
+        - Name: !Ref KittensSubDomainName 
           Type: A
           AliasTarget:
             DNSName: !GetAtt MyCloudfront.DomainName
@@ -102,4 +102,4 @@ Outputs:
     Value: !GetAtt MyCloudfront.DomainName
   FullDomainName:
     Description: Full Domain Name of my Application
-    Value: !Ref KittensSubDomainName
+    Value: !Ref KittensSubDomainName  
